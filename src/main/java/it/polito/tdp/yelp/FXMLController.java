@@ -44,22 +44,44 @@ public class FXMLController {
     private TextArea txtResult; // Value injected by FXMLLoader
     
     @FXML
-    void doRiempiLocali(ActionEvent event) {
-    	this.cmbLocale.getItems().clear();
+    void doRiempiLocali(ActionEvent event) {//azione invocata alla scelta di un valore dalla tendina citta'
+    	this.cmbLocale.getItems().clear(); //pulire la tendina dei locali 
     	String citta = this.cmbCitta.getValue();
     	if(citta != null) {
-    		//TODO popolare la tendina dei locali per la città selezionata
-    		
+    		List<Business> bus = model.businessDataCitta(citta);
+    		this.cmbLocale.getItems().addAll(bus);    		
     	}
+    	//se citta' e' null non si fa nulla, non si puo' invocare un errore, si potrebbe solo nel caso
+    	//si prevedesse il valore stringa vuota nella tendina, ma non e' richiesto 
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	Business b = this.cmbLocale.getValue();
+    	
+    	//ogni volta che si crea un nuovo grafo non serve ripulire il resultField perche' 
+    	//il primo comando e' un set text 
+    	if(b != null) {
+    		model.creaGrafo(b);
+    		this.txtResult.setText(model.infoGrafo()); //set, cosi' se prima ci fosse stato l'avviso di errore si cancella, rimane piu' pulito
+    		this.txtResult.appendText("\n\n");
+    		this.txtResult.appendText(model.archiUscentiMax() +"\n");
+    	}else {
+    		this.txtResult.setText("Per favore scegliere un locale per poter creare il grafo.\n"
+    				+ "(Per poter scegliere il locale è necessario selezionare una città");
+    	}
     	
     }
 
     @FXML
     void doTrovaMiglioramento(ActionEvent event) {
+    	
+    	if(model.infoGrafo().compareTo("") == 0) {
+    		this.txtResult.setText("Per favore, crere il grafo per poter calcolare \"miglioramento\"");
+    		
+    	}else {
+    		this.txtResult.appendText(model.miglioramento());    		
+    	}
     	
     }
 
@@ -75,5 +97,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	List<String> citta = model.citiesOrdinate();
+    	this.cmbCitta.getItems().addAll(citta); //i valori sono sempre questi, non serve pulire la tendina
     }
 }
